@@ -128,7 +128,7 @@ __Methods__
 2. ```std::vector<task_id> parents() const``` - returns vector of parents' IDs.
 3. ```int weight() const``` -  returns weight of the task.
 4. ```virtual void execute()``` - starts executing function/lambda that was assigned to a task within ```bind``` method.
-5. ```decltype(auto) bind(Func && func, Args && ... args)``` - assigns a function to a task. Returns ```std::future```. Example:
+5. ```decltype(auto) bind(Func && func, Args && ... args)``` - assigns a function to a task. Returns ```std::future```.
 
 ## qp::task_manager
 
@@ -219,7 +219,7 @@ __6. No parents equal__
 
 ![Set](assets/no_parents_equal.png)
 
-For more detail see ```task_generator```'s source code.
+For more details see ```test/task_generator```'s source code.
 
 
 ## 4.3 Sorting tasks - preformance <a name="test2"></a>
