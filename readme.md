@@ -78,7 +78,7 @@ Running task manager:
 Finished. Press Enter to exit...
 ```
 
-For more details see ```example/main.cpp```:
+For more details see ```example/main.cpp```.
 
 
 # 2. Installation <a name="install"></a>
