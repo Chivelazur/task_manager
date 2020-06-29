@@ -108,20 +108,20 @@ bool task_manager::task_sort(task_vector & tasks) {
 
                 // Process tasks.
                 for (auto it = current.begin(); it != current.end(); ++it) {
-                    // Get parent's IDs of the task.
+                    // Get parents' IDs of the task.
                     parents = tasks[(*it)]->parents();
-                    // If task has no parents - push it to next iteration.
+                    // If task has no parents - push the task to the next iteration.
                     if (parents.size() == 0) {
                         next.insert( (*it) );
                         status[*it].second = false;
                     }
-                    // If task has parents - push it's parents to next iteration.
+                    // If task has parents - push its parents to the next iteration.
                     else {
                         for (auto par_id : parents) {
                             auto pos = positions[par_id];
-                            // If parent wasn't visited yet.
+                            // If parent isn't visited yet.
                             if (!status[pos].first) {
-                                // Add parent to next and remove from current.
+                                // Add parent to the next iteration and remove it from the current iteration.
                                 next.insert(pos);
                                 status[pos].second = false;
                             }
@@ -148,7 +148,7 @@ bool task_manager::task_sort(task_vector & tasks) {
                 }
 
                 // Otherwise continue chaining the tasks - push next to current.
-                current = std::vector<int> (next.begin(), next.end());
+                current = std::vector<int> ( std::make_move_iterator(next.begin()), std::make_move_iterator(next.end()) );
                 for (auto it = current.begin(); it != current.end(); ++it) {
                     status[*it].second = true;
                 }
