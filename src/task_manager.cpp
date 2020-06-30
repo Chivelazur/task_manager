@@ -49,11 +49,7 @@ void task_manager::wait() {
 
 bool task_manager::task_sort(task_vector & tasks) {
     // First: sort ascending by task's weights.
-    std::stable_sort(tasks.begin(), tasks.end(), 
-        [](const std::unique_ptr<task> & left, const std::unique_ptr<task> & right) -> bool {
-            return (left->weight() > right->weight());
-        }
-    );
+    _sort_by_weight(tasks);
 
     // Prepare temporary containers.
     auto n = tasks.size();
@@ -78,17 +74,17 @@ bool task_manager::task_sort(task_vector & tasks) {
     // Tasks to be processed in the next iteration (inner while cycle).
     auto next = std::set<int>(); 
   
-    // Tasks in current iteratioт.
+    // Tasks in current iteration (positions of tasks).
     auto current = std::vector<int> ();
 
     // Parents of tasks of the current iteration.
     auto parents = std::vector<task_id>();
 
     // Task-chain in right order to be placed in final output vector "ordered".
-    auto temp_deque = std::deque<int>();
+    auto temp_queue = std::deque<int>();
 
     // In temp deque or removed.
-    // First - visited, second - task must be added to the temp_deque.
+    // First - visited, second - task must be added to the temp_queue.
     auto status = std::vector<std::pair<bool, bool>> (n, std::pair<bool, bool> (false, false));
     
     // Indicates whether there are only parentless tasks in next.
@@ -105,7 +101,6 @@ bool task_manager::task_sort(task_vector & tasks) {
                 // Prepare.
                 next.clear();
                 flag = true;
-
                 // Process tasks.
                 for (auto it = current.begin(); it != current.end(); ++it) {
                     // Get parents' IDs of the task.
@@ -133,7 +128,7 @@ bool task_manager::task_sort(task_vector & tasks) {
                 // Add all rest tasks from to the queue and mark them as visited.
                 for (auto it = current.rbegin(); it != current.rend(); ++it) {
                     if ( status[*it].second ) {
-                        temp_deque.push_front(*it);
+                        temp_queue.push_front(*it);
                         status[*it].first = true;
                     }
                 }
@@ -141,7 +136,7 @@ bool task_manager::task_sort(task_vector & tasks) {
                 // If next contains only parentless tasks - break the chain of tasks.
                 if (flag) {
                     for (auto it = next.rbegin(); it != next.rend(); ++it) {
-                        temp_deque.push_front(*it);
+                        temp_queue.push_front(*it);
                         status[*it].first = true;
                     }
                     break;
@@ -154,13 +149,13 @@ bool task_manager::task_sort(task_vector & tasks) {
                 }
             }
 
-            // Replace dequeued tasks.
-            for (auto pos : temp_deque) {
+            // Replace queued tasks to final ordered vector.
+            for (auto pos : temp_queue) {
                 ordered.emplace_back(std::move(tasks.at(pos)));
             }
             
-            // Clear the deque for the next iteration.
-            temp_deque.clear();
+            // Clear the queue for the next iteration.
+            temp_queue.clear();
         }
     }
 
@@ -172,62 +167,11 @@ bool task_manager::task_sort(task_vector & tasks) {
 
 
 void task_manager::_launch_thread_pool() {
+    // Create required number of workers.
+    // And start executing tasks in a loop.
     for (int i = 0; i < _thread_count; ++i) {
         _thread_pool.emplace_back(
-            [this] {
-                bool parents_ready;
-                // Start a loop.
-                while (_is_running) {
-                    std::unique_ptr<task> temp_task;
-                    {
-                        // Wait for notificiation and try acquire _on_hold.
-                        std::unique_lock<std::mutex> lock(_tasks_mutex);
-                        this->_cv.wait(lock, [this]{ return !this->_is_running || !this->_on_hold.exchange(true); });
-
-                        // If thread pool is running - look for a new task.
-                        if (_is_running) {
-                            for (auto i = _current_index; i < _tasks.size(); ++i) {
-                                // Loop through the queue to find tasks that have done parents.
-                                parents_ready = true;
-                                for (auto par_id : _tasks[i]->parents()) {
-                                    if (!_is_done[par_id]) {
-                                        parents_ready = false;
-                                        break;
-                                    }
-                                }
-                                if (parents_ready) {
-                                    // Move the task to be executed to the beginning of the queue.
-                                    _tasks[i].swap(_tasks[_current_index]);
-                                    temp_task = std::move(_tasks[_current_index]);
-                                    ++_current_index;
-                                    // If thread got the last task in the queue - say finish to other tasks.
-                                    if (_current_index == _tasks.size()) {
-                                        _is_running = false;
-                                        _cv.notify_all();
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                        else return;
-                    }
-
-                    // If there is a task to be executed.
-                    if (temp_task != nullptr) {
-                        // Give a way to another thread.
-                        _on_hold.exchange(false);
-                        _cv.notify_one();
-
-                        // Start executing the task.
-                        temp_task->execute();
-                        _is_done[temp_task->id()].store(true);
-
-                        // In case all threads are staying on hold - notify one of them.
-                        _on_hold.exchange(false);
-                        _cv.notify_one();
-                    }
-                }
-            }
+            [this] { _start_infinite_loop(); }
         );
     }
 }
@@ -254,6 +198,82 @@ bool task_manager::_prepare_tasks() {
         return true;
     }
     return false;
+}
+
+
+
+void task_manager::_pass_the_torch() {
+    _on_hold.exchange(false);
+    _cv.notify_one();
+}
+
+
+
+bool task_manager::_parents_ready(int position) {
+    for (auto par_id : _tasks[position]->parents()) {
+        if (!_is_done[par_id]) return false;
+    }
+    return true;
+}
+
+
+
+void task_manager::_start_infinite_loop() {
+    while (_is_running) {
+        std::unique_ptr<task> temp_task;
+        {
+            // Wait for notificiation and try acquire _on_hold.
+            std::unique_lock<std::mutex> lock(_tasks_mutex);
+            this->_cv.wait(lock, [this]{ return !this->_is_running || !this->_on_hold.exchange(true); });
+
+            // If thread pool is running - try to pick a new task.
+            // In case the last task picked - notify other threads to finish.
+            if (_is_running) {
+                _try_to_pick_task(temp_task);
+            }
+            else return;
+        }
+
+        // If there is a task to be executed.
+        if (temp_task != nullptr) {
+            // Give a way to another thread.
+            _pass_the_torch();
+            // Start executing the task and mark it as done.
+            temp_task->execute();
+            _is_done[temp_task->id()].store(true);
+            // In case all threads are staying on hold - notify one of them.
+            _pass_the_torch();
+        }
+    }
+}
+
+
+
+void task_manager::_try_to_pick_task(std::unique_ptr<task> & out) {
+    for (auto i = _current_index; i < _tasks.size(); ++i) {
+        if (_parents_ready(i)) {
+            // Move the task to be executed to the beginning of the queue.
+            _tasks[i].swap(_tasks[_current_index]);
+            out = std::move(_tasks[_current_index]);
+            ++_current_index;
+            // If thread got the last task in the queue - say finish to other tasks.
+            if (_current_index == _tasks.size()) {
+                _is_running = false;
+                _cv.notify_all();
+            }
+            break;
+        } 
+    }
+}
+
+
+
+void task_manager::_sort_by_weight(task_vector & tasks) {
+    std::stable_sort(tasks.begin(), tasks.end(), 
+        [](const std::unique_ptr<task> & left, const std::unique_ptr<task> & right) -> bool {
+            return (left->weight() > right->weight());
+        }
+    );
 }
 
 }

@@ -37,7 +37,12 @@ private:
     void _launch_thread_pool();
     void _join_threads();
     bool _prepare_tasks();
-
+    void _pass_the_torch();
+    bool _parents_ready(int position);
+    void _start_infinite_loop();
+    void _try_to_pick_task(std::unique_ptr<task> & out);
+    static void _sort_by_weight(task_vector & tasks);
+    
 };
 
 }
