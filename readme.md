@@ -13,6 +13,10 @@ __Keywords__
 
 _C++17_, _task management_, _thread pool_, _weighted task scheduling_, _directed acyclic graph_, _multithreading_.
 
+__Use case__
+
+Set appropriate relationships for your tasks, measure the time spend for task execution once (the weight of the task) and launch them using ```task_manager``` in several threads to accelerate your computations. Task results can be accessed through the ```std::future``` in order your program requires them - ```task_manager``` will do all other job.
+
 # 1. Quickstart <a name="quick"></a>
 
 ![task_manager example](assets/example.png)
@@ -23,39 +27,24 @@ _C++17_, _task management_, _thread pool_, _weighted task scheduling_, _directed
 auto tasks = qp::task_vector();
 auto results = std::vector<std::future<long>>();
 
-//Create first task with weight 1 and get future result.
-tasks.emplace_back( std::make_unique<qp::task>(1) );
+//Create first task with weight 1 and emplace future result into results.
+tasks.emplace( std::make_unique<qp::task>(1) );
 results.emplace_back( tasks[0]->bind(test_job, 1, tasks[0]->id()) );
 
 // ...
 // Add more tasks in the same way.
 // ...
 
-// Print tasks before sorting.
-std::cout << "Initial set: " << std::endl;
-cout_tasks(tasks);
-
-// Sort tasks.
-qp::task_manager::task_sort(tasks);
-
-// Print tasks after sorting.
-std::cout << "Sorted set: " << std::endl;
-cout_tasks(tasks);
-
 // Launch task manager with 2 threads.
 auto tm = qp::task_manager(std::move(tasks), 2);
-std::cout << "Running task manager: " << std::endl;
 tm.run();
 tm.wait();
 
-// Finish.
-std::cout << "Finished. Press Enter to exit...";
-std::getchar();
 ```
 
 __Output results:__
 
-```c++
+```cpp
 Initial set:
    > id: 1 weight: 1 parents:
    > id: 2 weight: 5 parents: 1
@@ -90,12 +79,11 @@ __Requirements:__ C++17.
 
 # 3. API Reference <a name="descr"></a>
 
-Library has its own namespace ```qp``` and contains two classes ```task``` and  ```task_manager```.
+Library has its own namespace ```qp``` and contains 3 classes ```task```, ```task_vector``` and  ```task_manager```.
 
-Library uses two typedefs (syntax sugar):
+Library uses typedef (syntax sugar):
 
-1. ```typedef unsigned long long task_id``` - for tracking ```task```s and setting their relationships.
-2. ```typedef std::vector<std::unique_ptr<task>> task_vector``` - for passing ```task```s to ```task_manager```.
+- ```typedef unsigned long long task_id``` - for tracking ```task```s and setting their relationships.
 
 ## qp::task
 
@@ -130,6 +118,39 @@ __Methods__
 4. ```virtual void execute()``` - starts executing function/lambda that was assigned to a task within ```bind``` method.
 5. ```decltype(auto) bind(Func && func, Args && ... args)``` - assigns a function to a task. Returns ```std::future```.
 
+
+## qp::task_vector
+
+__Description__
+
+A non-copyable container for storing ```task```s. ```task_vector``` is just a ```std::vector``` of ```std::unique_ptr<task>```s under the hood with some additional information stored such as done status.
+
+- This class is not a thread safe container, thus it is protected by a mutex in the ```task_manager``` class.
+- It is only recommended to use this class as a container for moving tasks into a ```task_manager```.
+
+__Constructors__ 
+
+1. ```task_vector()``` - creates a new empty task vector.
+2. ```task_vector(task_vector && TaskVector)``` - moves everything from the input TaskVector to a newly created task vector.
+
+__Methods__
+
+1. ```void emplace(std::unique_ptr<task> Task)``` - moves input Task to a task vector.
+2. ```void clear()``` - removes all tasks from the task vector.
+3. ```void reserve(size_t Size)``` - requests that the task vector's capacity be at least enough to contain Size elements.
+4. ```size_t size() const``` - return number of tasks contained in the task vector.
+5. ```bool sort()``` - sorts the tasks in optimal exectuing order. Algorithm's complexity is mostly determined by ```std::stable_sort```: __O( (n+v)\*log(n) )__, where __n__ - set size, __v__ - number of relationships. Requires additional space __O(n)__.
+   - Returns false if not all parents are present in the input task vector passed to constructor. Othwerwise returns true.
+6. ```bool pop_next(std::unique_ptr<task> & OutTask)``` - moves to the input OutTask next task in queue, that must be executed. If no available tasks to be executed - nothing to happen with OutTask.
+   - Returns false if the last task was returned, otherwise - true.
+7. ```void set_done(task_id TaskId)``` - sets done status to a task with the input TaskId. This method should be called after task execution was finished.
+8. ```void shuffle()``` - randomly shuffles tasks contained in the task vector.
+
+
+__Overloads__
+1. ```std::unique_ptr<task> & operator[](size_t i)``` - return reference to a certain ```std::unique_ptr<task>``` contained in a task vector. If ```i``` index is not peresent in a task vector, out of range exception will be thrown.
+
+
 ## qp::task_manager
 
 __Description__
@@ -154,8 +175,6 @@ __Methods__
     - If task manager had finished and was runned again - it will start executing tasks.
     - If task can't be sorted - ```std::runtime_error``` will be thrown.
 2. ```void wait()``` - waits for task manager to finish and joins the threads in a thread pool.
-3. ```static bool task_sort(task_vector & tasks)``` - sorts the tasks in optimal exectuing order.  Algorithm's complexity is mostly determined by ```std::stable_sort```: O( n\*log(n) ) or O( n\*log^2(n) ). Requires additional memory O(n).
-    - Returns false if not all parents are present in the input task vector passed to constructor.
 
 
 # 4. Performance <a name="perf"></a>
@@ -165,7 +184,7 @@ __Methods__
 - Compiler: MSVC v142, flag \O2.
 - Processor: Intel Core i5-7200U 2.50 GHz.
 - RAM: 8 Gb.
-- Date: 2020-06-27
+- Date: 2020-07-01
 
 ## 4.2 Test sets <a name="sets"></a>
 
@@ -222,57 +241,74 @@ __6. No parents equal__
 For more details see ```test/task_generator```'s source code.
 
 
-## 4.3 Sorting tasks - preformance <a name="test2"></a>
+## 4.3 Sorting algorithm
 
 - __Description:__ checking sorting performance in range from 10k to 10m on test sets _Worst single_, _Random single_, _No parents_.
-- __Ref:__ ```test::task_sort_performance()``` method in ```test/test.hpp```.
-- __Notes:__ Algorithm's complexity is mostly determined by ```std::stable_sort```: O( n\*log(n) ) or O( n\*log^2(n) ). Requires additional space O(n).
+- __Ref:__ ```test::sort_performance()``` method in ```test/test.hpp```.
 
-![sort](assets/sort.svg)
+![sort](assets/python_plots/sort.svg)
 
-## 4.4 Task manager - performance vs thread count <a name="test3"></a>
+- Algorithm's complexity is mostly determined by ```std::stable_sort```: __O( (n+v)\*log(n) )__, where __n__ - set size, __v__ - number of relationships. Requires additional space __O(n)__
+
+## 4.4 Performance vs thread count
 
 - __Description:__ checking performance vs thread count on different test sets.
-- __Ref:__ ```test::task_manager_performance_vs_thread()``` method in ```test/test.hpp```.
+- __Ref:__ ```test::performance_vs_thread()``` method in ```test/test.hpp```.
 - __Notes:__
    - Total runtime of each test set: 5 seconds (blue horizontal dashed line).
    - Processor's number of threads: 4 (red vertical dashed line).
 
-![manag10](assets/manager_10.svg)
+![manag10](assets/python_plots/performance_vs_thread_10.svg)
 
 1. _No parents_ has a lower limit starting from 7 threads because of the largest task in a set.
 2. _Worst single_ and _Worst multi_ has a runtime ~5 seconds because all the tasks are done in one thread.
 
-![manag100](assets/manager_100.svg)
+![manag100](assets/python_plots/performance_vs_thread_100.svg)
 
 1. _Random single_ in case of many tasks and enough number of threads looks like a _No parents_ set.
-2. A tiny offset for _Worst single_ and _Worst multi_ has a place because of the non-perfect testing function. In reality, sorting and managing tasks overhead has no practical difference in the range up to ~1k tasks.
+2. A tiny offset for _Worst single_ and _Worst multi_ has a place because of the increased set size - more time required for sorting and managing tasks (see next sections).
 
-## 4.5 Task manager - performance vs task count <a name="test4"></a>
+## 4.5 Performance vs set size (fixed total runtime)
 
-- __Description:__ checking performance on _No parents equal_ test set comparing to free tasks. Only 1 thread is used. This test shows overhead of using ```task_manager's``` instead of launching tasks without ```task``` and ```task_manager``` classes.
-- __Ref:__ ```test::task_manager_performance_vs_set()``` method in ```test/test.hpp```.
+- __Description:__ checking task_manager's overhead on _No parents equal_ test set. The total task runtime is fixed to 100s. Only 1 thread is used.
+- __Ref:__ ```test::performance_vs_set_size_fixed_total_runtime()``` method in ```test/test.hpp```.
 
-|Task count| Real runtime,s | Performance,s | Difference,s (%)|
-|--------|--------|---------|--------|
-|10000|10|10.04|0.04 (0.004 %)
-|20000|20|20.102|0.10 (0.005 %)
-|50000|50|50.232|0.23 (0.005 %)
-|100000|100|100.425|0.42 (0.004 %)
-|500000|500|502.338|2.34 (0.005 %)
-|1000000|1000|1005.17|5.17 (0.005 %)
+|Set size| Task duration, ms | Direct call, s | Task manager, s | Difference, s | Difference, % |
+|--------|--------|---------|--------|--------|--------|
+|1000|100|100.002|100.009|0.007|0.007|
+|2000|50|100.000|100.017|0.017|0.017|
+|5000|20|100.004|100.025|0.021|0.021|
+|10000|10|100.007|100.048|0.041|0.041|
+|50000|2|100.032|100.198|0.166|0.166|
+|100000|1|100.064|100.331|0.267|0.267|
 
-![manag_task](assets/time_dif.svg)
+![manag_task](assets/python_plots/performance_vs_set_size_fixed_total_runtime.svg)
 
+- Overhead caused by sorting tasks (see section above) and managing them - wrapping into ```std::packaged_task```, etc. Direct call of tasks is free from that stuff.
 
-## 4.6 Conclusions <a name="concl"></a>
+## 4.6 Performance vs set size (fixed task duration)
 
-- Sorting algorithm's complexity is mostly determined by the ```std::stable_sort```: O( n\*log(n) ) up to O( n\*log^2(n) ). Sorting requires additional memory O(n):
+- __Description:__ checking task_manager's overhead on _No parents equal_ test set. The duration of each task is fixed to 1 ms. Only 1 thread is used.
+- __Ref:__ ```test::performance_vs_set_size_fixed_task_duration()``` method in ```test/test.hpp```.
+
+|Set size| Task duration, ms | Direct call, s | Task manager, s | Difference, s | Difference, % |
+|--------|--------|---------|--------|--------|--------|
+|10000|1|10.007|10.031|0.024|0.240|
+|20000|1|20.014|20.058|0.044|0.220|
+|50000|1|50.027|50.156|0.129|0.258|
+|100000|1|100.056|100.383|0.327|0.327|
+|500000|1|500.258|502.129|1.871|0.374|
+|1000000|1|1000.73|1004.53|3.799|0.380|
+
+![manag_task](assets/python_plots/performance_vs_set_size_fixed_task_duraton.svg)
+
+## 4.7 Conclusions
+
+- Algorithm's complexity is mostly determined by ```std::stable_sort```: __O( (n+v)\*log(n) )__, where __n__ - set size, __v__ - number of relationships. Requires additional space __O(n)__
 
 - Use number of threads in accordance with your processor's parameters in case you don't have tests of your task set.
 
-- For practical usage - high-level computations and building pipelines - task_manager has negligeable small overhead: ~0.005% overhead comparing to launching tasks without ```task``` and ```task_manager``` classes in the range from 10k to 1b tasks.
-
+- For practical usage - high-level computations and building pipelines - task_manager has negligeable small overhead ~0.5% comparing to launching tasks without ```task```, ```task_vector``` and ```task_manager``` classes in the range from 10k to 1b tasks.
 
 # 5. Example <a name="example"></a>
 
@@ -281,7 +317,7 @@ For more details see ```test/task_generator```'s source code.
    - Here weight = milliseconds. 
    - Thread count: 4.
 
-Initial set:
+__Initial set:__
 
 ``` c++
    > id: 41 weight: 600 parents_id:
@@ -305,7 +341,7 @@ Initial set:
    > id: 33 weight: 20 parents_id: 27
 ```
 
-After sorting:
+__After sorting:__
 
 ``` c++
    > id: 27 weight: 10 parents_id:
@@ -329,7 +365,7 @@ After sorting:
    > id: 32 weight: 10 parents_id:
 ```
 
-Executing tasks:
+__Executing tasks:__
 
 ``` c++
    > this should appear right now

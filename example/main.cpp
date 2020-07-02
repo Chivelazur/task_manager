@@ -14,23 +14,23 @@ void main() {
     auto results = std::vector<std::future<long>>();
     
     //Create first task with weight 1 and get future result.
-    tasks.emplace_back( std::make_unique<qp::task>(1) );
+    tasks.emplace( std::make_unique<qp::task>(1) );
     results.emplace_back( tasks[0]->bind(test_job, 1, tasks[0]->id()) );
 
     // Create 0th task with weight 1.
-    tasks.emplace_back( std::make_unique<qp::task>(1) );
+    tasks.emplace( std::make_unique<qp::task>(1) );
     results.emplace_back( tasks[0]->bind(test_job, 1, tasks[0]->id()) );
 
     // Create 1st task with weight 5 and set task0 as a parent for it. 
-    tasks.emplace_back( std::make_unique<qp::task>(5, tasks[0]->id()) );
+    tasks.emplace( std::make_unique<qp::task>(5, tasks[0]->id()) );
     results.emplace_back( tasks[1]->bind(test_job, 5, tasks[1]->id()) );
 
     // Create 2nd task with weight 2.
-    tasks.emplace_back( std::make_unique<qp::task>(2) );
+    tasks.emplace( std::make_unique<qp::task>(2) );
     results.emplace_back( tasks[2]->bind(test_job, 2, tasks[2]->id()) );
 
     // Create 3rd task with weight 10 and set task0 and task2 as parents for it.
-    tasks.emplace_back( std::make_unique<qp::task>(10, std::vector<qp::task_id> {tasks[0]->id(), tasks[2]->id()}) );
+    tasks.emplace( std::make_unique<qp::task>(10, std::vector<qp::task_id> {tasks[0]->id(), tasks[2]->id()}) );
     results.emplace_back( tasks[3]->bind(test_job, 10, tasks[3]->id()) );
 
     // Print tasks before sorting.
@@ -38,7 +38,7 @@ void main() {
     cout_tasks(tasks);
 
     // Sort tasks.
-    qp::task_manager::task_sort(tasks);
+    tasks.sort();
 
     // Print tasks after sorting.
     std::cout << "Sorted set: " << std::endl;
@@ -72,7 +72,7 @@ void cout_tasks(qp::task_vector & tasks) {
     std::stringstream ss;
     for (auto i = 0; i < tasks.size(); ++i) {
         ss.str("");
-        ss << "   > id: " << tasks.at(i)->id() << " weight: " << tasks.at(i)->weight() << " parents:";
+        ss << "   > id: " << tasks[i]->id() << " weight: " << tasks[i] ->weight() << " parents:";
         for ( auto par_id : tasks[i]->parents() ) {
             ss << " " << par_id;
         }

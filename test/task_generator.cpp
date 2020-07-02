@@ -9,48 +9,48 @@
 
 namespace qp {
 
-void task_generator::test_set_worst_singleparent(int set_size, long total_millisec, bool print_job, task_vector & out) {
+void task_generator::test_set_worst_singleparent(size_t set_size, long total_millisec, bool print_job, task_vector & out) {
     // Prepare output.
     out.clear();
     out.reserve(set_size);
 
     // Common difference d (a1 = d)
-    int d = (2 * total_millisec) / (set_size * (set_size + 1));
+    int d = (int) ((2 * total_millisec) / (set_size * (set_size + 1)));
     auto weight = d;
 
     // Place 1st task.
     auto tsk = std::make_unique<task>(weight);
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     // Place rest of the tasks.
     for (int i = 2; i <= set_size; ++i) {
         weight = i*d;
         tsk = std::make_unique<task>(weight, std::vector<task_id> { out[i-2]->id() } );
-        tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-        out.emplace_back(std::move(tsk));
+        tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+        out.emplace(std::move(tsk));
     }
 
     // Shuffle.
-    shuffle(out);
+    out.shuffle();
 }
 
 
 
-void task_generator::test_set_worst_multiparent(int set_size, long total_millisec, bool print_job, task_vector & out) {
+void task_generator::test_set_worst_multiparent(size_t set_size, long total_millisec, bool print_job, task_vector & out) {
     // Prepare output.
     out.clear();
     out.reserve(set_size);
 
     // Common difference d.
-    int d = (2 * total_millisec) / (set_size * (set_size + 1));
+    int d = (int) ((2 * total_millisec) / (set_size * (set_size + 1)));
     auto weight = d;
     auto parents = std::vector<task_id>();
 
     // Place 1st task.
     auto tsk = std::make_unique<task>(weight);
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
     
     
     // Place rest of the tasks.
@@ -58,75 +58,75 @@ void task_generator::test_set_worst_multiparent(int set_size, long total_millise
         weight = i*d;
         parents.push_back(out[i-2]->id());
         tsk = std::make_unique<task>(weight, parents);
-        tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-        out.emplace_back(std::move(tsk));
+        tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+        out.emplace(std::move(tsk));
     }
 
     // Shuffle.
-    shuffle(out);
+    out.shuffle();
 }
 
 
 
-void task_generator::test_set_no_parent(int set_size, long total_millisec, bool print_job, task_vector & out) {
+void task_generator::test_set_no_parent(size_t set_size, long total_millisec, bool print_job, task_vector & out) {
     // Prepare output.
     out.clear();
     out.reserve(set_size);
 
     // Common difference d.
-    int d = (2 * total_millisec) / (set_size * (set_size + 1));
+    int d = (int) ((2 * total_millisec) / (set_size * (set_size + 1)));
 
     // Place 1st task.
     auto tsk = std::make_unique<task>(d);
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     // Place rest of the tasks.
     for (int i = 2; i <= set_size; ++i) {
         tsk = std::make_unique<task>(i*d);
-        tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-        out.emplace_back(std::move(tsk));
+        tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+        out.emplace(std::move(tsk));
     }
 
     // Shuffle.
-    shuffle(out);
+    out.shuffle();
 }
 
 
 
-void task_generator::test_set_no_parent_equal(int set_size, long total_millisec, bool print_job, task_vector & out) {
+void task_generator::test_set_no_parent_equal(size_t set_size, long total_millisec, bool print_job, task_vector & out) {
     // Prepare output.
     out.clear();
     out.reserve(set_size);
 
     // Common difference d.
-    int d = total_millisec / set_size;
+    int d = (int) (total_millisec / set_size);
 
     // Place 1st task.
     auto tsk = std::make_unique<task>(d);
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     // Place rest of the tasks.
     for (int i = 2; i <= set_size; ++i) {
         tsk = std::make_unique<task>(d);
-        tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-        out.emplace_back(std::move(tsk));
+        tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+        out.emplace(std::move(tsk));
     }
 
     // Shuffle.
-    shuffle(out);
+    out.shuffle();
 }
 
 
 
-void task_generator::test_set_random_singleparent(int set_size, long total_millisec, bool print_job, task_vector & out) {
+void task_generator::test_set_random_singleparent(size_t set_size, long total_millisec, bool print_job, task_vector & out) {
     // Prepare output.
     out.clear();
     out.reserve(set_size);
 
     // Common difference d.
-    int d = (2 * total_millisec) / (set_size * (set_size + 1));
+    int d = (int) ((2 * total_millisec) / (set_size * (set_size + 1)));
     
     // Generate weights and shuffle them.
     auto weights = std::vector<int>();
@@ -139,8 +139,8 @@ void task_generator::test_set_random_singleparent(int set_size, long total_milli
 
     // Place 1st task.
     auto tsk = std::make_unique<task>(weights[0]);
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
 
     // Random generation.
@@ -154,23 +154,23 @@ void task_generator::test_set_random_singleparent(int set_size, long total_milli
         distr = std::uniform_int_distribution<>(0, i-2);
         ind = distr(gen);
         tsk = std::make_unique<task>(weights[i-1], out[ind]->id());
-        tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-        out.emplace_back(std::move(tsk));
+        tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+        out.emplace(std::move(tsk));
     }
 
     // Shuffle.
-    shuffle(out);
+    out.shuffle();
 }
 
 
 
-void task_generator::test_set_random_multiparent(int set_size, long total_millisec, bool print_job, task_vector & out) {
+void task_generator::test_set_random_multiparent(size_t set_size, long total_millisec, bool print_job, task_vector & out) {
     // Prepare output.
     out.clear();
     out.reserve(set_size);
 
     // Common difference d.
-    int d = (2 * total_millisec) / (set_size * (set_size + 1));
+    int d = (int) ((2 * total_millisec) / (set_size * (set_size + 1)));
     
     // Generate weights and shuffle them.
     auto weights = std::vector<int>();
@@ -183,8 +183,8 @@ void task_generator::test_set_random_multiparent(int set_size, long total_millis
 
     // Place 1st task.
     auto tsk = std::make_unique<task>(weights[0]);
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     // For random parents.
     std::unordered_set<int> positions;
@@ -200,107 +200,99 @@ void task_generator::test_set_random_multiparent(int set_size, long total_millis
             parents.push_back(out[pos]->id());
         }
         tsk = std::make_unique<task>(weights[i-1], parents);
-        tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-        out.emplace_back(std::move(tsk));
+        tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+        out.emplace(std::move(tsk));
     }
 
     // Shuffle.
-    shuffle(out);
+    out.shuffle();
 }
 
 
 
 void task_generator::test_set_custom(bool print_job, task_vector & out) {
     auto tsk = std::make_unique<task>(1000);
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
     
     tsk = std::make_unique<task>(10);
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     tsk = std::make_unique<task>(20, out[1]->id());
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     tsk = std::make_unique<task>(30);
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     tsk = std::make_unique<task>(80);
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     tsk = std::make_unique<task>(20);
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     tsk = std::make_unique<task>(10);
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
     
     tsk = std::make_unique<task>(20, out[1]->id());
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
  
     tsk = std::make_unique<task>(30, out[1]->id());
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     tsk = std::make_unique<task>(1000, out[1]->id());
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     tsk = std::make_unique<task>(300);
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     tsk = std::make_unique<task>(100, std::vector<task_id> {out[10]->id(), out[9]->id()});
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     tsk = std::make_unique<task>(500, out[11]->id());
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     tsk = std::make_unique<task>(100, std::vector<task_id> {out[3]->id(), out[4]->id()} );
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     tsk = std::make_unique<task>(70, std::vector<task_id> {out[4]->id(), out[5]->id(), out[12]->id(), out[10]->id()} );
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
     
     tsk = std::make_unique<task>(600);
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     tsk = std::make_unique<task>(10);
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     tsk = std::make_unique<task>(700, out[16]->id());
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
     tsk = std::make_unique<task>(400);
-    tsk->bind(_job, print_job, tsk->id(), tsk->weight(), tsk->parents());
-    out.emplace_back(std::move(tsk));
+    tsk->bind(job, print_job, tsk->id(), tsk->weight(), tsk->parents());
+    out.emplace(std::move(tsk));
 
-    task_generator::shuffle(out);
+    out.shuffle();
 }
 
 
 
-void task_generator::shuffle(task_vector & out) {
-    auto seed = (unsigned int) std::chrono::system_clock::now().time_since_epoch().count();
-    auto rng = std::default_random_engine(seed);
-    std::shuffle(std::begin(out), std::end(out), rng);
-}
-
-
-
-void task_generator::_job(bool print_job, task_id id, int job_millisec, std::vector<task_id> parents) {
+void task_generator::job(bool print_job, task_id id, int job_millisec, std::vector<task_id> parents) {
     if (print_job) {
         std::stringstream ss;
         ss << "   > thread: " << std::this_thread::get_id() << "  start job. id: " << id << " weight: " << job_millisec;
