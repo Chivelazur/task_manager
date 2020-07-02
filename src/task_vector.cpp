@@ -129,7 +129,7 @@ bool task_vector::sort() {
 
 
 
-// Return false - there are no more tasks, the last was returned.
+// Returns false if the last task was returned.
 bool task_vector::pop_next(std::unique_ptr<task> & OutTask) {
     for (size_t i = _current_index; i < _tasks.size(); ++i) {
         if (_parents_ready(i)) {

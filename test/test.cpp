@@ -281,6 +281,7 @@ double test::_measure_time(const generator_func & func, int thread_count, int se
 
 
 
+// This method is only use to measure time of launching tasks without task_manager.
 double test::_measure_time(int set_size, long total_millisec) {
     auto job = total_millisec / set_size;
     clock_t timer = std::clock();

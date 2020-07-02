@@ -4,7 +4,7 @@
 #include <sstream>
 
 // Helper for printing tasks.
-void cout_tasks(qp::task_vector & tasks);
+void cout_tasks(std::string && text, qp::task_vector & tasks);
 // Test job for tasks - returns squared id.
 long test_job(int job_duration, qp::task_id id);
 
@@ -34,21 +34,19 @@ void main() {
     results.emplace_back( tasks[3]->bind(test_job, 10, tasks[3]->id()) );
 
     // Print tasks before sorting.
-    std::cout << "Initial set: " << std::endl;
-    cout_tasks(tasks);
+    cout_tasks("Initial set:", tasks);
 
     // Sort tasks.
     tasks.sort();
 
     // Print tasks after sorting.
-    std::cout << "Sorted set: " << std::endl;
-    cout_tasks(tasks);
+    cout_tasks("Sorted set:", tasks);
 
     // Launch task manager with 2 threads.
     auto tm = qp::task_manager(std::move(tasks), 2);
-    std::cout << "Running task manager: " << std::endl;
+    std::cout << "Running task manager:" << std::endl;
     tm.run();
-
+    tm.wait();
     /*
     Here is two options:
     1. wait for task_manager untill all tasks will be done:
@@ -59,8 +57,6 @@ void main() {
         }
     */
 
-    tm.wait();
-
     // Finish.
     std::cout << "Finished. Press Enter to exit...";
     std::getchar();
@@ -68,7 +64,8 @@ void main() {
 
 
 
-void cout_tasks(qp::task_vector & tasks) {
+void cout_tasks(std::string && text, qp::task_vector & tasks) {
+    std::cout << text << std::endl;
     std::stringstream ss;
     for (auto i = 0; i < tasks.size(); ++i) {
         ss.str("");

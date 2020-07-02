@@ -13,14 +13,11 @@ __Keywords__
 
 _C++17_, _task management_, _thread pool_, _weighted task scheduling_, _directed acyclic graph_, _multithreading_.
 
-__Use case__
-
-Set appropriate relationships for your tasks, measure the time spend for task execution once (the weight of the task) and launch them using ```task_manager``` in several threads to accelerate your computations. Task results can be accessed through the ```std::future``` in order your program requires them - ```task_manager``` will do all other job.
-
 # 1. Quickstart <a name="quick"></a>
 
 ![task_manager example](assets/example.png)
 
+__Source code:__
 
 ``` c++
 // Cerate container for tasks and their results.
@@ -31,17 +28,21 @@ auto results = std::vector<std::future<long>>();
 tasks.emplace( std::make_unique<qp::task>(1) );
 results.emplace_back( tasks[0]->bind(test_job, 1, tasks[0]->id()) );
 
-// ...
-// Add more tasks in the same way.
-// ...
+// ... add more tasks in the same way.
 
-// Launch task manager with 2 threads.
+// Print tasks before sorting, sort them and print again.
+cout_tasks("Initial set:", tasks);
+tasks.sort();
+cout_tasks("Sorted set:", tasks);
+
+// Launch task manager with 2 threads and wait for it
+// (another option is to get futures).
 auto tm = qp::task_manager(std::move(tasks), 2);
+std::cout << "Running task manager:" << std::endl;
 tm.run();
 tm.wait();
 
 ```
-
 __Output results:__
 
 ```cpp
@@ -68,6 +69,14 @@ Finished. Press Enter to exit...
 ```
 
 For more details see ```example/main.cpp```.
+
+__Use case__
+
+1. Create your tasks using ```task_vector```.
+2. Set relationships between them.
+3. Measure the time spend for tasks execution once - that is the weight of the tasks.
+4. Execute tasks with ```task_manager``` in several threads to accelerate your computations.
+5. Task results can be accessed through the ```std::future``` in order your program requires them - ```task_manager``` will do rest of the work.
 
 
 # 2. Installation <a name="install"></a>
@@ -148,7 +157,7 @@ __Methods__
 
 
 __Overloads__
-1. ```std::unique_ptr<task> & operator[](size_t i)``` - return reference to a certain ```std::unique_ptr<task>``` contained in a task vector. If ```i``` index is not peresent in a task vector, out of range exception will be thrown.
+1. ```std::unique_ptr<task> & operator[](size_t i)``` - return reference to a certain ```std::unique_ptr<task>``` contained in a task vector. If ```i``` index is not peresent in a task vector, ```out of range``` exception will be thrown.
 
 
 ## qp::task_manager
@@ -166,14 +175,14 @@ Remeber to make shared by tasks data thread-safe.
 
 __Constructors__
 
-1. ```task_manager(task_vector && tasks, int thread_count = 1)``` - creates a new task manager. The constructor just places the tasks without sorting and launching.
+1. ```task_manager(task_vector && TaskVector, int ThreadCount = 1)``` - creates a new task manager. The constructor just places the tasks without sorting and launching.
 
 __Methods__
 
-1. ```void run()``` - runs the task manager: sorting the tasks and start executing them in a thread pool.
+1. ```void run()``` - runs the task manager: sorts the ```task_vector``` and start executing them in a thread pool.
     - If task manager is already running - nothing will happen.
-    - If task manager had finished and was runned again - it will start executing tasks.
-    - If task can't be sorted - ```std::runtime_error``` will be thrown.
+    - If task manager had finished and was runned again - it will start executing tasks again.
+    - If task can't be sorted - ```runtime error``` will be thrown.
 2. ```void wait()``` - waits for task manager to finish and joins the threads in a thread pool.
 
 
