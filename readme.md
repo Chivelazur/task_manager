@@ -278,7 +278,7 @@ For more details see ```test/task_generator```'s source code.
 
 ## 4.5 Performance vs set size (fixed total runtime)
 
-- __Description:__ checking task_manager's overhead on _No parents equal_ test set. The total task runtime is fixed to 100s. Only 1 thread is used.
+- __Description:__ checking task_manager's overhead on _No parents equal_ test set. The total task runtime is fixed to 1000s. Only 1 thread is used.
 - __Ref:__ ```test::performance_vs_set_size_fixed_total_runtime()``` method in ```test/test.hpp```.
 
 |Set size| Task duration, ms | Direct call, s | Task manager, s | Difference, s | Difference, % |
