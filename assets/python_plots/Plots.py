@@ -85,7 +85,7 @@ def perf_set_fixed_runtime():
     ax.set_title('Performance vs set size (fixed total task runtime)')
     ax.set_ylabel('Relative difference, %')
     ax.set_xlabel('Set size')
-    ax.text(0, 0.25, 'Fixed total task runtime = 100 s')
+    ax.text(0, 0.25, 'Fixed total task runtime = 1000 s')
     ax.text(0, 0.24, 'No parents equal test set')
     ax.plot(x, tc, label='Task manager spent time', marker='o', markersize=3, linewidth=1.2)
     plt.figure(4)

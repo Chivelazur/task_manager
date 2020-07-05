@@ -65,7 +65,6 @@ Running task manager:
    > thread: 1  start job. id: 4 weight: 10
    > thread: 2 finish job. id: 2 weight:5
    > thread: 1 finish job. id: 4 weight:10
-Finished. Press Enter to exit...
 ```
 
 For more details see ```example/main.cpp```.
@@ -168,7 +167,7 @@ A non-copyable class for launching tasks in optimal order using thread pool.
 
 Number of threads used by ```task_manager``` is defined by user (but not less than 1).
 - it is recommended to determine optimal number of threads for your use case.
-- some ideas may be found in [test_results.md](https://github.com/Chivelazur/task_manager/blob/master/test_results.md).
+- some ideas may be found in section below.
 - if you just want to use multithreading - use ```std::thread::hardware_concurrency```.
 
 Remeber to make shared by tasks data thread-safe.
@@ -284,12 +283,11 @@ For more details see ```test/task_generator```'s source code.
 
 |Set size| Task duration, ms | Direct call, s | Task manager, s | Difference, s | Difference, % |
 |--------|--------|---------|--------|--------|--------|
-|1000|100|100.002|100.009|0.007|0.007|
-|2000|50|100.000|100.017|0.017|0.017|
-|5000|20|100.004|100.025|0.021|0.021|
-|10000|10|100.007|100.048|0.041|0.041|
-|50000|2|100.032|100.198|0.166|0.166|
-|100000|1|100.064|100.331|0.267|0.267|
+|10000|100|1000.01|1000.12|0.109|0.0108999|
+|50000|20|1000.04|1000.32|0.278|0.027799|
+|100000|10|1000.07|1000.56|0.495|0.0494966|
+|500000|2|1000.35|1002.28|1.931|0.193033|
+|1000000|1|1000.52|1004.25|3.733|0.373106|
 
 ![manag_task](assets/python_plots/performance_vs_set_size_fixed_total_runtime.svg)
 
@@ -303,7 +301,6 @@ For more details see ```test/task_generator```'s source code.
 |Set size| Task duration, ms | Direct call, s | Task manager, s | Difference, s | Difference, % |
 |--------|--------|---------|--------|--------|--------|
 |10000|1|10.007|10.031|0.024|0.240|
-|20000|1|20.014|20.058|0.044|0.220|
 |50000|1|50.027|50.156|0.129|0.258|
 |100000|1|100.056|100.383|0.327|0.327|
 |500000|1|500.258|502.129|1.871|0.374|

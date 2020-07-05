@@ -151,15 +151,15 @@ void test::performance_vs_set_size_fixed_total_runtime(std::string && outputfile
 
     std::stringstream ss;
     std::vector<double> times;
-    std::vector<int> n = {1000, 2000, 5000, 10000, 50000, 100000};
-    int runtime = 100; // s
+    std::vector<int> n = {10000, 50000, 100000, 500000, 1000000};//{1000, 5000, 10000, 50000, 100000};
+    int runtime = 1000; // s
     double nominal;
     for (auto set_size : n) {
         times.clear();
         ss.str("");
-
         times.push_back( _measure_time(&task_generator::test_set_no_parent_equal, 1, set_size, runtime * 1000));
         nominal = _measure_time(set_size, runtime * 1000);
+        
         ss << set_size << "," << (runtime * 1000) / set_size << "," << nominal;
         for (auto time : times) {
             ss << "," << time << "," << time - nominal << "," << (time - nominal) * 100 / nominal;
@@ -181,7 +181,7 @@ void test::performance_vs_set_size_fixed_task_duration(std::string && outputfile
 
     std::stringstream ss;
     std::vector<double> times;
-    std::vector<int> n = {10000, 20000, 50000, 100000, 500000, 1000000};
+    std::vector<int> n = {10000, 50000, 100000, 500000, 1000000};
     int task_dur = 1;
     int runtime;
     double nominal;
