@@ -2,7 +2,7 @@
 
 namespace qp {
 
-container::container(const std::vector<std::unique_ptr<task>> & Tasks):
+container::container(const std::vector<task_ptr> & Tasks):
     next(),
     current(),
     temp_queue(),

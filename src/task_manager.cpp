@@ -11,10 +11,7 @@ task_manager::task_manager(task_vector && TaskVector, int ThreadCount) :
 
 
 task_manager::~task_manager() {
-    {
-        std::lock_guard<std::mutex> lock(_task_vector_mutex);
-        _is_running = false;
-    }
+    _is_running = false;
     _cv.notify_all();
     _join_threads();
 }
@@ -69,7 +66,7 @@ void task_manager::_pass_the_torch() {
 
 void task_manager::_start_infinite_loop() {
     while (_is_running) {
-        std::unique_ptr<task> temp_task;
+        task_ptr temp_task;
         {
             // Wait for notificiation and try acquire _on_hold.
             std::unique_lock<std::mutex> lock(_task_vector_mutex);

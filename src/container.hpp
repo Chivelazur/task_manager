@@ -32,7 +32,7 @@ public:
 
 public:
     // Creates new container, fills positions and visited.
-    container(const std::vector<std::unique_ptr<task>> & Tasks);
+    container(const std::vector<task_ptr> & Tasks);
 
     // Sets task that are to be used in current iteration.
     void set_current(size_t Position);

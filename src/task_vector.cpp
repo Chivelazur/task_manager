@@ -27,14 +27,14 @@ task_vector & task_vector::operator=(task_vector && TaskVector) {
 
 
 
-void task_vector::emplace(std::unique_ptr<task> Task) {
+void task_vector::emplace(task_ptr Task) {
     _is_done.emplace(Task->id(), false);
     _tasks.emplace_back(std::move(Task));
 }
 
 
 
-std::unique_ptr<task> & task_vector::operator[](size_t i) {
+task_ptr & task_vector::operator[](size_t i) {
     return _tasks[i];
 }
 
@@ -66,7 +66,7 @@ bool task_vector::sort() {
 
     // Prepare temporary containers: pass sorted vector of tasks.
     auto temp = container(_tasks);
-    auto ordered = std::vector< std::unique_ptr<task> > ();
+    auto ordered = std::vector<task_ptr> ();
     ordered.reserve(_tasks.size());
 
     // Check all parents are in a test set.
@@ -130,7 +130,7 @@ bool task_vector::sort() {
 
 
 // Returns false if the last task was returned.
-bool task_vector::pop_next(std::unique_ptr<task> & OutTask) {
+bool task_vector::pop_next(task_ptr & OutTask) {
     for (size_t i = _current_index; i < _tasks.size(); ++i) {
         if (_parents_ready(i)) {
             // Move the task to be executed to the beginning of the queue.
@@ -165,7 +165,7 @@ void task_vector::shuffle() {
 
 void task_vector::_sort_by_weights() {
     std::stable_sort(_tasks.begin(), _tasks.end(), 
-        [](const std::unique_ptr<task> & left, const std::unique_ptr<task> & right) -> bool {
+        [](const task_ptr & left, const task_ptr & right) -> bool {
             return (left->weight() > right->weight());
         }
     );

@@ -91,7 +91,8 @@ Library has its own namespace ```qp``` and contains 3 classes ```task```, ```tas
 
 Library uses typedef (syntax sugar):
 
-- ```typedef unsigned long long task_id``` - for tracking ```task```s and setting their relationships.
+- ```typedef unsigned long long task_id```.
+- ```typedef std::unique_ptr<task> task_ptr```.
 
 ## qp::task
 

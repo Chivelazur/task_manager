@@ -6,8 +6,6 @@
 
 namespace qp {
 
-typedef unsigned long long task_id;
-
 class task {
 private:
     int _weight;
@@ -42,5 +40,8 @@ public:
     }
 
 };
+
+typedef std::unique_ptr<task> task_ptr;
+typedef unsigned long long task_id;
 
 }
