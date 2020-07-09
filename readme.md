@@ -264,7 +264,7 @@ For more details see ```test/task_generator```'s source code.
 - __Description:__ checking performance vs thread count on different test sets.
 - __Ref:__ ```test::performance_vs_thread()``` method in ```test/test.hpp```.
 - __Notes:__
-   - Total runtime of each test set determinde by arithmetic progression (blue horizontal dashed line):
+   - Total runtime of each test set determined by arithmetic progression (blue horizontal dashed line):
       - size 10 -> 5.005 seconds.
       - size 100 -> 5.050 seconds.
    - Processor's number of threads: 4 (red vertical dashed line).
@@ -317,7 +317,7 @@ For more details see ```test/task_generator```'s source code.
 
 - Use number of threads in accordance with your processor's parameters in case you don't have tests of your task set.
 
-- For practical usage - high-level computations and building pipelines - task_manager has negligeable small overhead ~0.5% comparing to launching tasks without ```task```, ```task_vector``` and ```task_manager``` classes in the range from 10k to 1b tasks.
+- For practical usage - high-level computations and building pipelines - ```task_manager``` has negligeable small overhead ~0.5% comparing to launching tasks without ```task```, ```task_vector``` and ```task_manager``` classes in the range from 10k to 1b tasks.
 
 # 5. Example <a name="example"></a>
 
