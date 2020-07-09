@@ -73,9 +73,9 @@ __Use case__
 
 1. Create your tasks using ```task_vector```.
 2. Set relationships between them.
-3. Measure the time spend for tasks execution once - that is the weight of the tasks.
+3. Measure the time spent for tasks execution once - that is the weight of the tasks.
 4. Execute tasks with ```task_manager``` in several threads to accelerate your computations.
-5. Task results can be accessed through the ```std::future``` in order your program requires them - ```task_manager``` will do rest of the work.
+5. Task results can be accessed through the ```std::future``` in order your program requires them - ```task_manager``` will do the rest of the work.
 
 
 # 2. Installation <a name="install"></a>
@@ -89,7 +89,7 @@ __Requirements:__ C++17.
 
 Library has its own namespace ```qp``` and contains 3 classes ```task```, ```task_vector``` and  ```task_manager```.
 
-Library uses typedef (syntax sugar):
+Library uses typedefs (syntax sugar):
 
 - ```typedef unsigned long long task_id```.
 - ```typedef std::unique_ptr<task> task_ptr```.
@@ -123,9 +123,9 @@ __Methods__
 
 1. ```task_id id() const``` - return id of the task.
 2. ```std::vector<task_id> parents() const``` - returns vector of parents' IDs.
-3. ```int weight() const``` -  returns weight of the task.
-4. ```virtual void execute()``` - starts executing function/lambda that was assigned to a task within ```bind``` method.
-5. ```decltype(auto) bind(Func && func, Args && ... args)``` - assigns a function to a task. Returns ```std::future```.
+3. ```int weight() const``` - returns weight of the task.
+4. ```virtual void execute()``` - starts executing function/lambda that was assigned to the task within ```bind``` method.
+5. ```decltype(auto) bind(Func && func, Args && ... args)``` - assigns a function/lambda to the task. Returns ```std::future```.
 
 
 ## qp::task_vector
