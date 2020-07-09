@@ -264,7 +264,9 @@ For more details see ```test/task_generator```'s source code.
 - __Description:__ checking performance vs thread count on different test sets.
 - __Ref:__ ```test::performance_vs_thread()``` method in ```test/test.hpp```.
 - __Notes:__
-   - Total runtime of each test set: 5 seconds (blue horizontal dashed line).
+   - Total runtime of each test set determinde by arithmetic progression (blue horizontal dashed line):
+      - size 10 -> 5.005 seconds.
+      - size 100 -> 5.050 seconds.
    - Processor's number of threads: 4 (red vertical dashed line).
 
 ![manag10](assets/python_plots/performance_vs_thread_10.svg)
@@ -275,7 +277,7 @@ For more details see ```test/task_generator```'s source code.
 ![manag100](assets/python_plots/performance_vs_thread_100.svg)
 
 1. _Random single_ in case of many tasks and enough number of threads looks like a _No parents_ set.
-2. A tiny offset for _Worst single_ and _Worst multi_ has a place because of the increased set size - more time required for sorting and managing tasks (see next sections).
+
 
 ## 4.5 Performance vs set size (fixed total runtime)
 

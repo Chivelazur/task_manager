@@ -120,15 +120,15 @@ void test::performance_vs_thread(int max_count, std::string && outputfile) {
         times.clear();
         ss.str("");
 
-        times.push_back( _measure_time(&task_generator::test_set_worst_singleparent, i, 10, 5050) );
+        times.push_back( _measure_time(&task_generator::test_set_worst_singleparent, i, 10, 5005) );
         times.push_back( _measure_time(&task_generator::test_set_worst_singleparent, i, 100, 5050) );
-        times.push_back( _measure_time(&task_generator::test_set_worst_multiparent, i, 10, 5050) );
+        times.push_back( _measure_time(&task_generator::test_set_worst_multiparent, i, 10, 5005) );
         times.push_back( _measure_time(&task_generator::test_set_worst_multiparent, i, 100, 5050) );
-        times.push_back( _measure_time(&task_generator::test_set_random_singleparent, i, 10, 5050) );
+        times.push_back( _measure_time(&task_generator::test_set_random_singleparent, i, 10, 5005) );
         times.push_back( _measure_time(&task_generator::test_set_random_singleparent, i, 100, 5050) );
-        times.push_back( _measure_time(&task_generator::test_set_random_multiparent, i, 10, 5050) );
+        times.push_back( _measure_time(&task_generator::test_set_random_multiparent, i, 10, 5005) );
         times.push_back( _measure_time(&task_generator::test_set_random_multiparent, i, 100, 5050) );
-        times.push_back( _measure_time(&task_generator::test_set_no_parent, i, 10, 5050) );
+        times.push_back( _measure_time(&task_generator::test_set_no_parent, i, 10, 5005) );
         times.push_back( _measure_time(&task_generator::test_set_no_parent, i, 100, 5050) );
 
         ss << i;

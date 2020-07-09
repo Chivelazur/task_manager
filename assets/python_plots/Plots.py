@@ -31,7 +31,7 @@ def sort():
     plt.savefig("sort.svg", format="svg")
 
 
-def perf_thread(count, fign):
+def perf_thread(count, fign, total):
     x = []
     ws, wm, rs, rm, np = [], [], [], [], []
     n = count
@@ -60,8 +60,8 @@ def perf_thread(count, fign):
 
     ax.axvline(x=4,  color='r', linewidth=1.2, linestyle='dashed')
     ax.text(5, 8, 'Proc threads = 4', color='r', rotation=90)
-    ax.text(20, 4.8, 'Total task run = 5 sec', color='b')
-    ax.axhline(y=5,  color='b', linewidth=1.2, linestyle='dashed')
+    ax.text(20, 4.8, 'Total task run = ' + total + ' sec', color='b')
+    ax.axhline(y=float(total),  color='b', linewidth=1.2, linestyle='dashed')
     ax.legend(loc='center left', bbox_to_anchor=(0.80, 0.85), fancybox=True)
 
     plt.figure(fign)
@@ -141,8 +141,8 @@ def perf_task_dur():
 
 
 sort()
-perf_thread(count='10', fign=2)
-perf_thread(count='100', fign=3)
+perf_thread(count='10', fign=2, total='5.005')
+perf_thread(count='100', fign=3, total='5.050')
 perf_set_fixed_runtime()
 perf_set_fixed_task_dur()
 perf_task_dur()
