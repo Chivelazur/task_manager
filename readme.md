@@ -1,6 +1,6 @@
 # task_manager
 
-__task_manager__ is a tiny C++ library for encapsulating, sorting and launching weighted tasks (tasks with manually defined weights) with relationships in separate threads. This library can be used to build pipelines.
+__task_manager__ is a tiny C++ library for encapsulating, sorting and launching weighted tasks (tasks with manually defined weights) with relationships in separate threads. This library can be used to build effective pipelines.
 
 1. [Quickstart](#quick)
 2. [Installation](#install)
@@ -134,7 +134,7 @@ __Description__
 
 A non-copyable container for storing ```task```s. ```task_vector``` is just a ```std::vector``` of ```std::unique_ptr<task>```s under the hood with some additional information stored such as done status.
 
-- This class is not a thread safe container, thus it is protected by a mutex in the ```task_manager``` class.
+- This class is not a thread-safe container, thus it is protected by a mutex in the ```task_manager``` class.
 - It is only recommended to use this class as a container for moving tasks into a ```task_manager```.
 
 __Constructors__ 
@@ -182,8 +182,8 @@ __Methods__
 1. ```void run()``` - runs the task manager: sorts the ```task_vector``` and start executing them in a thread pool.
     - If task manager is already running - nothing will happen.
     - If task manager had finished and was runned again - it will start executing tasks again.
-    - If task can't be sorted - ```runtime error``` will be thrown.
-2. ```void wait()``` - waits for task manager to finish and joins the threads in a thread pool.
+    - If tasks can't be sorted - ```runtime error``` will be thrown.
+2. ```void wait()``` - waits for a task manager to finish and joins all threads in the thread pool.
 
 
 # 4. Performance <a name="perf"></a>
@@ -257,14 +257,14 @@ For more details see ```test/task_generator```'s source code.
 
 ![sort](assets/python_plots/sort.svg)
 
-- Algorithm's complexity is mostly determined by ```std::stable_sort```: __O( (n+v)\*log(n) )__, where __n__ - set size, __v__ - number of relationships. Requires additional space __O(n)__
+- Algorithm's complexity is mostly determined by the ```std::stable_sort```: __O( (n+v)\*log(n) )__, where __n__ - set size, __v__ - number of relationships. Requires additional space __O(n)__
 
 ## 4.4 Performance vs thread count
 
 - __Description:__ checking performance vs thread count on different test sets.
 - __Ref:__ ```test::performance_vs_thread()``` method in ```test/test.hpp```.
 - __Notes:__
-   - Total runtime of each test set determined by arithmetic progression (blue horizontal dashed line):
+   - Total runtime of each test set determined by the arithmetic progression (blue horizontal dashed line):
       - size 10 -> 5.005 seconds.
       - size 100 -> 5.050 seconds.
    - Processor's number of threads: 4 (red vertical dashed line).
@@ -313,7 +313,7 @@ For more details see ```test/task_generator```'s source code.
 
 ## 4.7 Conclusions
 
-- Algorithm's complexity is mostly determined by ```std::stable_sort```: __O( (n+v)\*log(n) )__, where __n__ - set size, __v__ - number of relationships. Requires additional space __O(n)__
+- Algorithm's complexity is mostly determined by the ```std::stable_sort```: __O( (n+v)\*log(n) )__, where __n__ - set size, __v__ - number of relationships. Requires additional space __O(n)__
 
 - Use number of threads in accordance with your processor's parameters in case you don't have tests of your task set.
 
